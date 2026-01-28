@@ -1,12 +1,13 @@
 {
   "name": "cafe",
+  "homepage": "https://philipefirmo.github.io/coffee-roaster",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && node scripts/copy-404.js",
     "deploy": "gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview",

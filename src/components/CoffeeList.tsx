@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { Plus, Edit2, Trash2, Coffee as CoffeeIcon } from 'lucide-react';
 import Modal from './Modal';
 
@@ -11,6 +12,7 @@ interface CoffeeFormData {
 
 const CoffeeList: React.FC = () => {
   const { state, actions } = useApp();
+  const { showToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -38,17 +40,24 @@ const CoffeeList: React.FC = () => {
   const handleDelete = (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este café? Todo o histórico e estoque serão perdidos.')) {
       actions.deleteCoffee(id);
+      showToast('Café excluído com sucesso!', 'success');
     }
   };
 
   const onSubmit = (data: CoffeeFormData) => {
-    if (editingId) {
-      actions.updateCoffee(editingId, data);
-    } else {
-      actions.addCoffee(data);
+    try {
+      if (editingId) {
+        actions.updateCoffee(editingId, data);
+        showToast('Café atualizado com sucesso!', 'success');
+      } else {
+        actions.addCoffee(data);
+        showToast('Café cadastrado com sucesso!', 'success');
+      }
+      setIsModalOpen(false);
+      reset();
+    } catch (error) {
+      showToast('Erro ao salvar café.', 'error');
     }
-    setIsModalOpen(false);
-    reset();
   };
 
   return (
@@ -60,7 +69,7 @@ const CoffeeList: React.FC = () => {
         </div>
         <button
           onClick={openNew}
-          className="bg-caramel-600 text-black px-4 py-2 rounded-lg hover:bg-caramel-700 transition-colors shadow-sm flex items-center justify-center gap-2 font-bold border border-black dark:border-white dark:text-white"
+          className="bg-white-600 text-black px-4 py-2 rounded-lg hover:bg-white-700 transition-colors shadow-sm flex items-center justify-center gap-2 font-bold border border-black dark:border-white dark:text-white"
         >
           <Plus size={20} />
           <span>Novo Café</span>
@@ -69,10 +78,10 @@ const CoffeeList: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {state.coffees.map((coffee) => (
-          <div key={coffee.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 transition-colors relative group">
+          <div key={coffee.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 transition-colors relative group">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-natural-100 dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
+                <div className="bg-natural-50 dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
                   <CoffeeIcon size={24} />
                 </div>
                 <div>
@@ -116,7 +125,7 @@ const CoffeeList: React.FC = () => {
             <input
               type="text"
               {...register('name', { required: 'Nome é obrigatório' })}
-              className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+              className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
               placeholder="Ex: Colombia Huila"
             />
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
@@ -127,7 +136,7 @@ const CoffeeList: React.FC = () => {
             <textarea
               {...register('observations')}
               rows={3}
-              className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+              className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
               placeholder="Ex: Notas sensoriais, fornecedor..."
             />
           </div>

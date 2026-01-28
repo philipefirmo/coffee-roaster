@@ -59,19 +59,19 @@ export const colors = {
   
   // Verde natural (acento fresco)
   natural: {
-    50: '#f6f9f4',
-    100: '#e9f2e3',
-    200: '#d4e5c7',
-    300: '#b8d4a4',
-    400: '#96be7a',
-    500: '#7aa85f',
-    600: '#5f8f4a',
-    700: '#4a733b',
-    800: '#3d5c32',
-    900: '#344c2b',
+    50: '#f7f7f6',
+    100: '#ebeae8',
+    200: '#d6d4d0',
+    300: '#bebbb4',
+    400: '#a19c93',
+    500: '#878277',
+    600: '#6f6a60',
+    700: '#5c584d',
+    800: '#4c4840',
+    900: '#403d36',
   },
   
-  // Status colors
+  // Status colors    
   success: {
     50: '#f0fdf4',
     500: '#22c55e',

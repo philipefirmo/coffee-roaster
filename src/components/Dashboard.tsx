@@ -116,19 +116,19 @@ const Dashboard: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 transition-colors">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-black dark:text-white">Estoque Total</p>
               <p className="text-2xl font-bold text-black dark:text-white">{formatGrams(totalStock)}</p>
             </div>
-            <div className="bg-natural-100 dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
+            <div className="bg-white dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
               <Package size={24} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 transition-colors">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-black dark:text-white">Alertas de Baixo Estoque</p>
@@ -136,19 +136,19 @@ const Dashboard: React.FC = () => {
                 {lowStockCount}
               </p>
             </div>
-            <div className={`bg-natural-100 dark:bg-gray-700 p-3 rounded-full ${lowStockCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+            <div className={`bg-white dark:bg-gray-700 p-3 rounded-full ${lowStockCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
               <AlertTriangle size={24} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 transition-colors">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-black dark:text-white">Movimentações Hoje</p>
               <p className="text-2xl font-bold text-black dark:text-white">{movementsToday}</p>
             </div>
-            <div className="bg-natural-100 dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
+            <div className="bg-white dark:bg-gray-700 p-3 rounded-full text-black dark:text-white">
               <TrendingUp size={24} />
             </div>
           </div>
@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl border border-natural-200 dark:border-gray-700 shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl border border-natural-100 dark:border-gray-700 shadow-sm">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
@@ -164,7 +164,7 @@ const Dashboard: React.FC = () => {
             placeholder="Buscar por Café ou PR/Lote..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
           />
           {filterText && (
             <button
@@ -183,7 +183,7 @@ const Dashboard: React.FC = () => {
               type="date"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
+              className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
             />
             {filterDate && (
               <button
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'all' | 'ok' | 'low')}
-              className="w-full sm:w-auto pl-10 pr-8 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-espresso-500 appearance-none cursor-pointer"
+              className="w-full sm:w-auto pl-10 pr-8 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-espresso-500 appearance-none cursor-pointer"
             >
               <option value="all">Todos os Status</option>
               <option value="ok">Estoque OK</option>
@@ -214,8 +214,8 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stock List - Responsive */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 overflow-hidden transition-colors">
-        <div className="px-6 py-4 border-b border-natural-200 dark:border-gray-700 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 overflow-hidden transition-colors">
+        <div className="px-6 py-4 border-b border-natural-100 dark:border-gray-700 flex justify-between items-center">
           <h3 className="text-lg font-bold text-black dark:text-white">Estoque por Café</h3>
           <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             {filteredCoffees.length} café(s) encontrado(s)
@@ -303,10 +303,10 @@ const Dashboard: React.FC = () => {
             filteredCoffees.map((coffee) => {
                const totalQuantity = coffee.roasts.reduce((sum, r) => sum + r.quantity, 0);
                return (
-                 <div key={coffee.id} className="border-b border-natural-200 dark:border-gray-700 last:border-0">
+                 <div key={coffee.id} className="border-b border-natural-100 dark:border-gray-700 last:border-0">
                     <div className="bg-natural-50 dark:bg-gray-900 px-4 py-3 flex justify-between items-center">
                       <h4 className="font-bold text-black dark:text-white">{coffee.name}</h4>
-                      <span className="text-xs font-bold text-black dark:text-gray-300 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-natural-200 dark:border-gray-700">
+                      <span className="text-xs font-bold text-black dark:text-gray-300 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-natural-100 dark:border-gray-700">
                         Total: {formatGrams(totalQuantity)}
                       </span>
                     </div>

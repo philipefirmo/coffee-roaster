@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useApp } from '../context/AppContext';
-import { Plus, Minus, CheckCircle, XCircle } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Plus, Minus } from 'lucide-react';
 import { Movement } from '../types';
 
 interface FormData {
@@ -21,7 +22,7 @@ interface MovementFormProps {
 
 const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) => {
   const { state, actions } = useApp();
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const { showToast } = useToast();
   
   const {
     register,
@@ -56,16 +57,11 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
       const quantityNum = Number(data.quantity);
       
       if (isNaN(quantityNum)) {
-        alert('A quantidade deve ser um número válido.');
+        showToast('A quantidade deve ser um número válido.', 'error');
         return;
       }
 
       if (data.type === 'saida' && selectedCoffee) {
-        // If editing, we need to consider the original quantity before checking stock limit?
-        // Actually, the reducer handles reversion, so here we might just check against current + old (if editing).
-        // But for simplicity, let's just check current stock. 
-        // Ideally, if editing a 'saida', we should check if (currentStock + oldQuantity) >= newQuantity.
-        
         let availableStock = selectedCoffee.roasts.reduce((sum, roast) => sum + roast.quantity, 0);
         
         if (initialData && initialData.type === 'saida' && initialData.coffeeId === data.coffeeId) {
@@ -73,13 +69,13 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
         }
 
         if (quantityNum > availableStock) {
-          alert(`Quantidade insuficiente! Estoque disponível: ${availableStock}g`);
+          showToast(`Quantidade insuficiente! Estoque disponível: ${availableStock}g`, 'error');
           return;
         }
       }
 
       if (!state.currentUser) {
-        alert('Erro: Usuário não identificado. Por favor, faça login novamente.');
+        showToast('Erro: Usuário não identificado. Por favor, faça login novamente.', 'error');
         return;
       }
 
@@ -95,43 +91,27 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
 
       if (initialData) {
         actions.updateMovement(initialData.id, movementData);
+        showToast('Movimentação atualizada com sucesso!', 'success');
       } else {
         actions.addMovement(movementData);
+        showToast('Movimentação registrada com sucesso!', 'success');
       }
 
-      setSubmitStatus('success');
       reset();
+      if (onSuccess) onSuccess();
       
-      setTimeout(() => {
-        setSubmitStatus('idle');
-        if (onSuccess) onSuccess();
-      }, 1500);
     } catch (error) {
-      setSubmitStatus('error');
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
+      showToast('Erro ao processar movimentação.', 'error');
+      console.error(error);
     }
   };
 
   return (
     <div className="space-y-4">
-      {submitStatus === 'success' && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm flex items-center gap-2">
-          <CheckCircle size={16} /> Movimentação {initialData ? 'atualizada' : 'registrada'}!
-        </div>
-      )}
-
-      {submitStatus === 'error' && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm flex items-center gap-2">
-          <XCircle size={16} /> Erro ao registrar.
-        </div>
-      )}
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Tipo */}
         <div className="flex gap-4">
-          <label className="flex items-center p-3 border border-natural-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
+          <label className="flex items-center p-3 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
             <input
               type="radio"
               value="entrada"
@@ -139,10 +119,10 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
               className="text-black focus:ring-espresso-500"
             />
             <span className="ml-2 font-bold text-black dark:text-white flex items-center gap-1">
-              <Plus size={16} className="text-black dark:text-white" /> Entrada
+              Entrada
             </span>
           </label>
-          <label className="flex items-center p-3 border border-natural-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
+          <label className="flex items-center p-3 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
             <input
               type="radio"
               value="saida"
@@ -150,7 +130,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
               className="text-black focus:ring-espresso-500"
             />
             <span className="ml-2 font-bold text-black dark:text-white flex items-center gap-1">
-              <Minus size={16} className="text-black dark:text-white" /> Saída
+              Saída
             </span>
           </label>
         </div>
@@ -161,7 +141,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
           <label className="block text-sm font-bold text-black dark:text-white mb-1">Café</label>
           <select
             {...register('coffeeId', { required: 'Selecione um café' })}
-            className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+            className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
           >
             <option value="">Selecione...</option>
             {state.coffees.map((coffee) => (
@@ -177,7 +157,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
           <input
             type="text"
             {...register('pr', { required: 'Digite o PR' })}
-            className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500"
+            className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500"
             placeholder="Digite o código do PR"
           />
         </div>
@@ -190,7 +170,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
               type="date"
               {...register('date', { required: true })}
               defaultValue={new Date().toISOString().split('T')[0]}
-              className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+              className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
             />
           </div>
           <div>
@@ -198,7 +178,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
             <input
               type="number"
               {...register('quantity', { required: true, min: 1, valueAsNumber: true })}
-              className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500"
+              className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="0"
             />
           </div>
@@ -210,7 +190,7 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, initialData }) =
           <textarea
             {...register('observations')}
             rows={2}
-            className="w-full rounded-md border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+            className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
             placeholder="Opcional"
           />
         </div>

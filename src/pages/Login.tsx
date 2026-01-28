@@ -14,8 +14,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-natural-100 dark:bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md border border-natural-200 dark:border-gray-700">
+    <div className="min-h-screen bg-natural-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md border border-natural-100 dark:border-gray-700">
         <div className="flex flex-col items-center mb-8">
           <div className="bg-black dark:bg-white text-white dark:text-black p-4 rounded-xl mb-4">
             <Coffee size={48} />
@@ -34,7 +34,7 @@ const Login: React.FC = () => {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-3 px-4 border text-black dark:text-white font-medium placeholder-gray-400"
+              className="w-full rounded-lg border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-3 px-4 border text-black dark:text-white font-medium placeholder-gray-400"
               placeholder="Digite seu nome"
               required
               autoFocus

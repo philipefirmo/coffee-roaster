@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { History as HistoryIcon, Plus, Minus, Filter, Calendar, Edit2, Trash2, Search, X } from 'lucide-react';
 import { formatGrams } from '../lib/utils';
 import Modal from './Modal';
@@ -8,6 +9,7 @@ import { Movement } from '../types';
 
 const History: React.FC = () => {
   const { state, actions } = useApp();
+  const { showToast } = useToast();
   const [filterType, setFilterType] = useState<'all' | 'entrada' | 'saida'>('all');
   const [filterText, setFilterText] = useState('');
   const [filterDate, setFilterDate] = useState('');
@@ -47,6 +49,7 @@ const History: React.FC = () => {
   const handleDelete = (movement: Movement) => {
     if (window.confirm(`Tem certeza que deseja excluir esta movimentação de ${formatGrams(movement.quantity)} do café ${movement.coffeeName}? O estoque será revertido.`)) {
       actions.deleteMovement(movement.id);
+      showToast('Movimentação excluída com sucesso!', 'success');
     }
   };
 
@@ -57,9 +60,9 @@ const History: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header & Filter */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 p-6 flex flex-col sm:flex-row justify-between items-center gap-4 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 p-6 flex flex-col sm:flex-row justify-between items-center gap-4 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="bg-natural-100 dark:bg-gray-700 p-2 rounded-lg text-black dark:text-white">
+          <div className="bg-natural-50 dark:bg-gray-700 p-2 rounded-lg text-black dark:text-white">
             <HistoryIcon size={24} />
           </div>
           <div>
@@ -72,7 +75,7 @@ const History: React.FC = () => {
       </div>
 
       {/* Advanced Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl border border-natural-200 dark:border-gray-700 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl border border-natural-100 dark:border-gray-700 shadow-sm">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
@@ -80,7 +83,7 @@ const History: React.FC = () => {
             placeholder="Buscar por Café, PR/Lote ou Responsável..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
           />
           {filterText && (
             <button
@@ -99,7 +102,7 @@ const History: React.FC = () => {
               type="date"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
+              className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-espresso-500"
             />
             {filterDate && (
               <button
@@ -116,7 +119,7 @@ const History: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as 'all' | 'entrada' | 'saida')}
-              className="w-full sm:w-auto pl-10 pr-8 py-2 rounded-lg border border-natural-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-espresso-500 appearance-none cursor-pointer"
+              className="w-full sm:w-auto pl-10 pr-8 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-espresso-500 appearance-none cursor-pointer"
             >
               <option value="all">Todas as Movimentações</option>
               <option value="entrada">Apenas Entradas</option>
@@ -130,7 +133,7 @@ const History: React.FC = () => {
       </div>
 
       {/* Tabela de Histórico (Desktop) / Cards (Mobile) */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-200 dark:border-gray-700 overflow-hidden transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 overflow-hidden transition-colors">
         
         {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto">

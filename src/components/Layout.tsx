@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="h-screen bg-white dark:bg-gray-900 font-sans text-black dark:text-white transition-colors duration-200 flex overflow-hidden">
+    <div className="h-screen bg-natural-50 dark:bg-gray-900 font-sans text-black dark:text-white transition-colors duration-200 flex overflow-hidden">
       
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-black dark:border-white flex items-center justify-between px-4 z-30 transition-colors">
@@ -52,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col h-full
       `}>
-        <div className="h-16 flex items-center px-6 border-b border-natural-200 dark:border-gray-700 shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-natural-100 dark:border-gray-700 shrink-0">
            <div className="flex items-center gap-3">
               <div className="bg-black dark:bg-white text-white dark:text-black p-2 rounded-lg">
                 <Coffee size={24} />
@@ -65,7 +65,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* User Info */}
-        <div className="px-6 py-4 border-b border-natural-200 dark:border-gray-700 shrink-0">
+        <div className="px-6 py-4 border-b border-natural-100 dark:border-gray-700 shrink-0">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Usuário</p>
           <p className="text-sm font-bold text-black dark:text-white truncate">{state.currentUser?.name}</p>
         </div>
@@ -80,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${
                   isActive
                     ? 'bg-black dark:bg-white text-white dark:text-black shadow-md'
-                    : 'text-black dark:text-gray-300 hover:bg-natural-100 dark:hover:bg-gray-700'
+                    : 'text-black dark:text-gray-300 hover:bg-natural-50 dark:hover:bg-gray-700'
                 }`
               }
             >
@@ -90,10 +90,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-natural-200 dark:border-gray-700 space-y-2 shrink-0">
+        <div className="p-4 border-t border-natural-100 dark:border-gray-700 space-y-2 shrink-0">
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-natural-200 dark:border-gray-600 hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors text-black dark:text-white font-bold text-sm"
+            className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-natural-100 dark:border-gray-600 hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors text-black dark:text-white font-bold text-sm"
           >
             {state.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             <span>{state.theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>

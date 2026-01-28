@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="h-screen bg-natural-100 dark:bg-gray-900 font-sans text-black dark:text-white transition-colors duration-200 flex overflow-hidden">
+    <div className="h-screen bg-white dark:bg-gray-900 font-sans text-black dark:text-white transition-colors duration-200 flex overflow-hidden">
       
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-black dark:border-white flex items-center justify-between px-4 z-30 transition-colors">

@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-caramel-600 text-black px-4 py-2 rounded-lg hover:bg-caramel-700 transition-colors shadow-sm flex items-center justify-center gap-2 font-bold border border-black dark:border-white dark:text-white"
+          className="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center justify-center gap-2 font-bold border border-black dark:bg-white dark:border-white dark:text-black dark:hover:bg-gray-200"
         >
           <Plus size={20} />
           <span>Nova Movimentação</span>

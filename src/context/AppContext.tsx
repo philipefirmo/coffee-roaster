@@ -19,7 +19,7 @@ type AppAction =
   | { type: 'LOGIN'; payload: string }
   | { type: 'LOGOUT' };
 
-const initialState: AppState & { theme: 'light' | 'dark' } = {
+const initialState: AppState = {
   coffees: mockCoffees,
   movements: mockMovements,
   alerts: [],
@@ -99,7 +99,7 @@ function updateStock(coffees: Coffee[], movement: Movement, revert: boolean = fa
   });
 }
 
-function appReducer(state: AppState & { theme: 'light' | 'dark' }, action: AppAction): AppState & { theme: 'light' | 'dark' } {
+function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'ADD_MOVEMENT': {
       const quantityNum = Number(action.payload.quantity);

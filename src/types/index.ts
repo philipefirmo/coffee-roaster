@@ -43,6 +43,7 @@ export interface AppState {
   lastUpdate: Date;
   lastUpdatedBy?: string;
   currentUser: User | null;
+  theme: 'light' | 'dark';
 }
 
 export interface AppContextType {

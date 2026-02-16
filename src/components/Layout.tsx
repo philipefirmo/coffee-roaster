@@ -92,7 +92,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           ) : (
             <div className="bg-espresso-600 text-white p-1 rounded-lg shrink-0">
-              <img src="/roaster-Icon.png" alt="Studio Grão" className="w-9 h-9 object-contain invert" />
+              <img src={roasterIcon} alt="Studio Grão" className="w-9 h-9 object-contain invert" />
             </div>
           )}
           <h1 className="text-lg font-bold tracking-tight text-black dark:text-white truncate">
@@ -132,7 +132,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             onClick={() => navigate('/')}
           >
             <div className="bg-espresso-600 text-white p-1.5 rounded-lg shrink-0">
-              <img src="/roaster-Icon.png" alt="Studio Grão" className="w-9 h-9 object-contain invert" />
+              <img src={roasterIcon} alt="Studio Grão" className="w-9 h-9 object-contain invert" />
             </div>
             {!sidebarCollapsed && (
               <div className="leading-tight">

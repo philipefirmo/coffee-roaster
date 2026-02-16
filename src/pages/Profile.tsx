@@ -110,7 +110,7 @@ const Profile: React.FC = () => {
           </div>
         </form>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 p-6 max-w-2xl">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 p-6 max-w-2xl lg:hidden">
         <h3 className="text-lg font-bold text-black dark:text-white mb-4 lg:hidden">Configurações do App</h3>
         <div className="space-y-2 lg:hidden">
           <button

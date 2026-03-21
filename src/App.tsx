@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Route, createRoutesFromElements, Navigate, Outlet } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -13,7 +13,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import './App.css';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC = () => {
   const { session, loading } = useAuth();
 
   if (loading) {
@@ -26,44 +26,51 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
 };
 
-function AppContent() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/historico" element={<History />} />
-                  <Route path="/cafes" element={<CoffeeList />} />
-                  <Route path="/cafes/novo" element={<CoffeeFormPage />} />
-                  <Route path="/cafes/editar/:id" element={<CoffeeFormPage />} />
-                  <Route path="/movimentacoes/nova" element={<MovementFormPage />} />
-                  <Route path="/movimentacoes/editar/:id" element={<MovementFormPage />} />
-                  <Route path="/perfil" element={<Profile />} />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
-  );
-}
+const router = createHashRouter(
+  createRoutesFromElements(
+    <>
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/historico" element={<History />} />
+        <Route path="/cafes" element={<CoffeeList />} />
+        <Route path="/cafes/novo" element={<CoffeeFormPage />} />
+        <Route path="/cafes/editar/:id" element={<CoffeeFormPage />} />
+        <Route path="/movimentacoes/nova" element={<MovementFormPage />} />
+        <Route path="/movimentacoes/editar/:id" element={<MovementFormPage />} />
+        <Route path="/perfil" element={<Profile />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </>
+  )
+);
+
+import ScrollToTop from './components/ScrollToTop';
+
+// ... (existing imports)
 
 function App() {
   return (
     <ToastProvider>
       <AuthProvider>
         <AppProvider>
-          <AppContent />
+          <RouterProvider router={router} />
+          {/* ScrollToTop precisa estar dentro do RouterProvider, mas como RouterProvider cria o contexto, 
+              ele não pode estar aqui fora. 
+              Na v6.4+ com Data Routers, a melhor forma é ter o ScrollToTop dentro do componente Layout ou Root.
+              Vou adicionar no Layout.tsx ou criar um wrapper. 
+              
+              AJUSTE: Com createHashRouter, não podemos colocar componentes "irmãos" do RouterProvider que dependam do Router.
+              O ScrollToTop deve ser um componente renderizado dentro das rotas.
+              Vou adicionar ao Layout.tsx.
+           */}
         </AppProvider>
       </AuthProvider>
     </ToastProvider>

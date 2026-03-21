@@ -413,7 +413,12 @@ const MultipleMovementForm: React.FC<MultipleMovementFormProps> = ({ onSuccess, 
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     value={entry.pr}
-                                    onChange={(e) => updateEntry(entry.id, 'pr', e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '' || /^\d+$/.test(val)) {
+                                            updateEntry(entry.id, 'pr', val);
+                                        }
+                                    }}
                                     className={`w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 touch-target ${prErrors[entry.id] ? 'border-red-500 focus:border-red-500' : ''}`}
                                     placeholder="Digite o código do PR"
                                     required
@@ -440,12 +445,17 @@ const MultipleMovementForm: React.FC<MultipleMovementFormProps> = ({ onSuccess, 
                             <div>
                                 <label className="block text-sm font-bold text-black dark:text-white mb-1">Quantidade (g) *</label>
                                 <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={entry.quantity}
-                                    onChange={(e) => updateEntry(entry.id, 'quantity', e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '' || /^\d+$/.test(val)) {
+                                            updateEntry(entry.id, 'quantity', val);
+                                        }
+                                    }}
                                     className="w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 touch-target"
                                     placeholder="0"
-                                    min="1"
                                     required
                                 />
                             </div>

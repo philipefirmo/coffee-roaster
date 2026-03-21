@@ -82,6 +82,13 @@ body {
   background-color: #8B5A3C;
 }
 
-.dark * {
-  scrollbar-color: #6B4423 transparent;
+
+/* Remove spin buttons from number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
 }

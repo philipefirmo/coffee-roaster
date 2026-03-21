@@ -5,6 +5,7 @@ import { CoffeeBeansVector } from './icons/CoffeeBeans';
 import roasterIcon from '../assets/roaster-Icon.png';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import ScrollToTop from './ScrollToTop';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -79,9 +80,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="h-screen bg-natural-50 dark:bg-gray-900 font-sans text-black dark:text-white transition-colors duration-200 flex overflow-hidden">
+      <ScrollToTop />
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-black dark:border-white flex items-center justify-between px-4 z-30 transition-colors">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 z-30 transition-colors">
         <div className="flex items-center gap-3 flex-1 overflow-hidden">
           {headerConfig.showBack ? (
             <button
@@ -92,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           ) : (
             <div className="bg-espresso-600 text-white p-1 rounded-lg shrink-0">
-              <img src="/roaster-Icon.png" alt="Studio Grão" className="w-9 h-9 object-contain invert" />
+              <img src={roasterIcon} alt="Studio Grão" className="w-9 h-9 object-contain invert" />
             </div>
           )}
           <h1 className="text-lg font-bold tracking-tight text-black dark:text-white truncate">
@@ -107,7 +109,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <aside className={`
         hidden lg:flex
         fixed lg:static inset-y-0 left-0 z-50
-        bg-white dark:bg-gray-800 border-r border-black dark:border-white
+        bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
         transition-all duration-300 ease-in-out
         ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
         flex-col h-full
@@ -132,12 +134,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             onClick={() => navigate('/')}
           >
             <div className="bg-espresso-600 text-white p-1.5 rounded-lg shrink-0">
-              <img src="/roaster-Icon.png" alt="Studio Grão" className="w-9 h-9 object-contain invert" />
+              <img src={roasterIcon} alt="Studio Grão" className="w-9 h-9 object-contain invert" />
             </div>
             {!sidebarCollapsed && (
-              <div className="leading-tight">
-                <h1 className="text-base font-bold text-black dark:text-white">Studio Grão</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Coffee Roaster</p>
+              <div className={`leading-tight overflow-hidden transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+                <h1 className="text-base font-bold text-black dark:text-white whitespace-nowrap">Studio Grão</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">Coffee Roaster</p>
               </div>
             )}
           </div>
@@ -183,14 +185,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => setIsSidebarOpen(false)}
               title={sidebarCollapsed ? item.label : ''}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-4 rounded-lg text-sm font-bold transition-all touch-target ${sidebarCollapsed ? 'lg:justify-center lg:px-2' : ''} ${isActive
+                `flex items-center px-4 py-4 rounded-lg text-sm font-bold transition-all touch-target ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3'} ${isActive
                   ? 'bg-espresso-600 text-white shadow-md'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-espresso-50 dark:hover:bg-gray-700/50 hover:text-espresso-700 dark:hover:text-white'
                 }`
               }
             >
-              {item.icon}
-              {!sidebarCollapsed && item.label}
+              <div className="shrink-0 flex items-center justify-center">
+                {item.icon}
+              </div>
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'w-0 opacity-0 absolute' : 'w-auto opacity-100'}`}>
+                {item.label}
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -199,19 +205,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             title={sidebarCollapsed ? (state.theme === 'dark' ? 'Modo Claro' : 'Modo Escuro') : ''}
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border border-natural-100 dark:border-gray-600 hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors text-black dark:text-white font-bold text-sm touch-target ${sidebarCollapsed ? 'lg:justify-center' : 'justify-center'}`}
+            className={`w-full flex items-center p-3 rounded-lg border border-natural-100 dark:border-gray-600 hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors text-black dark:text-white font-bold text-sm touch-target ${sidebarCollapsed ? 'justify-center' : 'gap-2'}`}
           >
-            {state.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            {!sidebarCollapsed && <span>{state.theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
+            <div className="shrink-0">
+              {state.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </div>
+            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-0 opacity-0 absolute' : 'w-auto opacity-100'}`}>
+              {state.theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+            </span>
           </button>
 
           <button
             onClick={handleLogout}
             title={sidebarCollapsed ? 'Sair' : ''}
-            className={`w-full flex items-center gap-2 p-3 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-bold text-sm touch-target ${sidebarCollapsed ? 'lg:justify-center' : 'justify-center'}`}
+            className={`w-full flex items-center p-3 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-bold text-sm touch-target ${sidebarCollapsed ? 'justify-center' : 'gap-2'}`}
           >
-            <LogOut size={18} />
-            {!sidebarCollapsed && <span>Sair</span>}
+            <div className="shrink-0">
+              <LogOut size={18} />
+            </div>
+            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-0 opacity-0 absolute' : 'w-auto opacity-100'}`}>
+              Sair
+            </span>
           </button>
         </div>
       </aside>
@@ -223,7 +237,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-black dark:border-white flex justify-around items-center h-16 z-30 px-2 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center h-16 z-30 px-2 pb-safe">
         {bottomNavItems.map((item) => (
           <NavLink
             key={item.path}

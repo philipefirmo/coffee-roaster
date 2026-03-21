@@ -524,15 +524,6 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
             }
           }
 
-          // Validar PR duplicado no banco (entradas)
-          if (movementType === 'entrada') {
-            const isDuplicate = await checkPrExists(entry.coffeeId, prLine.pr);
-            if (isDuplicate) {
-              showToast(`PR ${prLine.pr} já existe para este café`, 'error');
-              return;
-            }
-          }
-
           const timestamp = movementType === 'entrada'
             ? new Date(`${entry.date}T${new Date().toTimeString().split(' ')[0]}`).toISOString()
             : new Date().toISOString();
@@ -644,13 +635,52 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
 
             {movements.map((mov: any, idx: number) => {
               const coffee = state.coffees.find(c => c.id === mov.coffeeId);
+              const currentStock = coffee ? coffee.roasts.reduce((sum, r) => sum + r.quantity, 0) : 0;
+              const isEntrada = mov.type === 'entrada';
+              // Se for edição, precisamos descontar o valor antigo antes de somar o novo?
+              // O initialData tem o valor antigo.
+              let predictedStock = currentStock;
+
+              if (initialData && initialData.coffeeId === mov.coffeeId) {
+                // Reverter efeito da movimentação original
+                const originalType = initialData.type;
+                const originalQty = initialData.quantity;
+                if (originalType === 'entrada') {
+                  predictedStock -= originalQty;
+                } else {
+                  predictedStock += originalQty;
+                }
+              }
+
+              // Aplicar nova movimentação
+              if (isEntrada) {
+                predictedStock += mov.quantity;
+              } else {
+                predictedStock = Math.max(0, predictedStock - mov.quantity);
+              }
+
               return (
-                <div key={idx} className="border-l-4 border-espresso-500 pl-4 py-2">
-                  <p className="font-bold text-black dark:text-white">{coffee?.name || 'Café'}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">PR: {mov.pr} • {mov.quantity}g</p>
+                <div key={idx} className={`border-l-4 ${isEntrada ? 'border-green-500' : 'border-red-500'} p-4 bg-natural-50 dark:bg-gray-700/30 rounded-r-lg`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-black dark:text-white text-lg">{coffee?.name || 'Café'}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Lote/PR: {mov.pr}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-xl font-bold ${isEntrada ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {isEntrada ? '+' : '-'}{mov.quantity}g
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 text-sm border-t border-natural-200 dark:border-gray-600 pt-3 flex justify-between items-center">
+                    <span className="text-gray-500 dark:text-gray-400">Estoque previsto:</span>
+                    <span className="font-bold text-black dark:text-white">{predictedStock}g</span>
+                  </div>
+
                   {mov.observations && (
-                    <p className="text-sm text-gray-500 dark:text-gray-500 italic mt-1">
-                      {mov.observations.length > 60
+                    <p className="text-sm text-gray-500 dark:text-gray-500 italic mt-2">
+                      Obs: {mov.observations.length > 60
                         ? `${mov.observations.substring(0, 60)}...`
                         : mov.observations}
                     </p>
@@ -687,6 +717,39 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
             </button>
           </div>
         </div>
+
+        {/* Modal de Confirmação de Saída (Duplicado para o modo Resumo) */}
+        {showExitConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-bold text-black dark:text-white mb-3">
+                Descartar alterações?
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Você tem dados não salvos. Se sair agora, todas as alterações serão perdidas.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowExitConfirm(false)}
+                  className="flex-1 py-2 px-4 text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  Continuar editando
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExitConfirm(false);
+                    delete (window as any).pendingMovements;
+                    if (onCancel) onCancel();
+                    if (onRequestClose) onRequestClose();
+                  }}
+                  className="flex-1 py-2 px-4 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700"
+                >
+                  Descartar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -696,24 +759,24 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
     <div className="space-y-4">
       <form onSubmit={(e) => { e.preventDefault(); handleContinue(); }} className="space-y-4">
         {/* Tipo */}
-        <div className="flex gap-4">
-          <label className="flex items-center p-4 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
+        <div className="flex gap-3 sm:gap-4">
+          <label className="flex items-center p-3 sm:p-4 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
             <input
               type="radio"
               value="entrada"
               {...register('type', { required: true })}
               className="text-black focus:ring-espresso-500"
             />
-            <span className="ml-2 font-bold text-black dark:text-white">Entrada</span>
+            <span className="ml-2 font-bold text-black dark:text-white text-sm sm:text-base">Entrada</span>
           </label>
-          <label className="flex items-center p-4 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
+          <label className="flex items-center p-3 sm:p-4 border border-natural-100 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-natural-50 dark:hover:bg-gray-700 flex-1 justify-center transition-colors">
             <input
               type="radio"
               value="saida"
               {...register('type', { required: true })}
               className="text-black focus:ring-espresso-500"
             />
-            <span className="ml-2 font-bold text-black dark:text-white">Saída</span>
+            <span className="ml-2 font-bold text-black dark:text-white text-sm sm:text-base">Saída</span>
           </label>
         </div>
 
@@ -722,10 +785,10 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
           const selectedCoffee = state.coffees.find(c => c.id === entry.coffeeId);
 
           return (
-            <div key={entry.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 space-y-3">
+            <div key={entry.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 space-y-3">
               {/* Header com X */}
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-espresso-700 dark:text-espresso-300">
+                <h3 className="text-base font-bold text-espresso-700 dark:text-espresso-300">
                   {movementType === 'entrada' ? 'Entrada' : 'Saída'} #{entryIndex + 1}
                 </h3>
                 {entries.length > 1 && (
@@ -735,19 +798,19 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
                     className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                     title={`Remover ${movementType === 'entrada' ? 'entrada' : 'saída'}`}
                   >
-                    <X size={20} className="text-red-600" />
+                    <X size={18} className="text-red-600" />
                   </button>
                 )}
               </div>
 
               {/* Café + Data */}
-              <div className={`grid ${movementType === 'entrada' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+              <div className={`grid ${movementType === 'entrada' ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <div>
-                  <label className="block text-sm font-bold text-black dark:text-white mb-1">Café *</label>
+                  <label className="block text-xs font-bold text-black dark:text-white mb-1">Café *</label>
                   <select
                     value={entry.coffeeId}
                     onChange={(e) => updateEntry(entry.id, 'coffeeId', e.target.value)}
-                    className="w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+                    className="w-full h-10 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-1 px-3 border text-black dark:text-white font-medium text-sm"
                   >
                     <option value="">Selecione...</option>
                     {(movementType === 'saida' ? getAvailableCoffeesForSaida(entry.id) : sortedCoffees).map(coffee => (
@@ -758,13 +821,13 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
 
                 {movementType === 'entrada' && (
                   <div>
-                    <label className="block text-sm font-bold text-black dark:text-white mb-1">Data da Torra *</label>
+                    <label className="block text-xs font-bold text-black dark:text-white mb-1">Data da Torra *</label>
                     <input
                       type="date"
                       value={entry.date}
                       onChange={(e) => updateEntry(entry.id, 'date', e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
-                      className="w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+                      className="w-full h-10 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-1 px-3 border text-black dark:text-white font-medium text-sm"
                     />
                   </div>
                 )}
@@ -802,7 +865,12 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
                           inputMode="numeric"
                           pattern="[0-9]*"
                           value={prLine.pr}
-                          onChange={(e) => updatePrLine(entry.id, prLine.id, 'pr', e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || /^\d+$/.test(val)) {
+                              updatePrLine(entry.id, prLine.id, 'pr', val);
+                            }
+                          }}
                           placeholder="Digite o PR"
                           className={`w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500 ${prErrors[`${entry.id}-${prLine.id}`] ? 'border-red-500 focus:border-red-500' : ''}`}
                         />
@@ -816,10 +884,15 @@ const MovementForm: React.FC<MovementFormProps> = ({ onSuccess, onCancel, onRequ
                       <div className="flex-1">
                         <label className="block text-sm font-bold text-black dark:text-white mb-1">Quantidade (g) *</label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={prLine.quantity}
-                          onChange={(e) => updatePrLine(entry.id, prLine.id, 'quantity', e.target.value)}
-                          min="1"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || /^\d+$/.test(val)) {
+                              updatePrLine(entry.id, prLine.id, 'quantity', val);
+                            }
+                          }}
                           placeholder="0"
                           className="w-full h-11 rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium placeholder-gray-400 dark:placeholder-gray-500"
                         />

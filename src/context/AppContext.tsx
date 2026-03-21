@@ -32,12 +32,14 @@ function calculateAlerts(coffees: Coffee[]): StockAlert[] {
 
   coffees.forEach(coffee => {
     const totalQuantity = coffee.roasts.reduce((sum, roast) => sum + roast.quantity, 0);
-    if (totalQuantity < 500) {
+    const threshold = coffee.minStockThreshold || 500;
+
+    if (totalQuantity < threshold) {
       alerts.push({
         coffeeId: coffee.id,
         coffeeName: coffee.name,
         currentQuantity: totalQuantity,
-        threshold: 500,
+        threshold: threshold,
       });
     }
   });
@@ -348,9 +350,13 @@ export function AppProvider({ children }: AppProviderProps) {
         if (movement.type === 'entrada') {
           if (currentRoast) {
             newQuantity = currentRoast.quantity + movement.quantity;
+            // Atualizar também a observação do Roast se for entrada
             await supabase
               .from('roasts')
-              .update({ quantity: newQuantity })
+              .update({
+                quantity: newQuantity,
+                observations: movement.observations // Sincroniza observação
+              })
               .eq('id', currentRoast.id);
           } else {
             // Novo Roast se não existir
@@ -479,6 +485,23 @@ export function AppProvider({ children }: AppProviderProps) {
       }
     },
 
+    deleteCoffees: async (coffeeIds: string[]) => {
+      try {
+        const { error } = await supabase
+          .from('coffees')
+          .delete()
+          .in('id', coffeeIds);
+
+        if (error) throw error;
+
+        showToast(`${coffeeIds.length} cafés excluídos`, 'success');
+        fetchData();
+      } catch (error) {
+        console.error('Erro ao deletar cafés:', error);
+        showToast('Erro ao excluir cafés', 'error');
+      }
+    },
+
     addMultipleMovements: async (movements: Array<Omit<Movement, 'id'>>) => {
       try {
         if (!movements || movements.length === 0) {
@@ -582,6 +605,23 @@ export function AppProvider({ children }: AppProviderProps) {
     refreshData: () => {
       fetchData();
       showToast('Dados atualizados', 'info');
+    },
+
+    updateRoastObservation: async (roastId: string, observation: string) => {
+      try {
+        const { error } = await supabase
+          .from('roasts')
+          .update({ observations: observation })
+          .eq('id', roastId);
+
+        if (error) throw error;
+
+        showToast('Observação atualizada com sucesso', 'success');
+        fetchData();
+      } catch (error) {
+        console.error('Erro ao atualizar observação:', error);
+        showToast('Erro ao atualizar observação', 'error');
+      }
     },
 
     login: (name: string) => {

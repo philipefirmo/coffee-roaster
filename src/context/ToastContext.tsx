@@ -41,7 +41,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     (message: string, type: ToastType = 'info', duration = 3000) => {
       const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
       const newToast = { id, type, message, duration };
-      
+
       setToasts((prev) => [...prev, newToast]);
 
       if (duration > 0) {
@@ -56,7 +56,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   return (
     <ToastContext.Provider value={{ showToast, removeToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[10000] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
+      <div className="fixed left-4 right-4 bottom-32 sm:left-auto sm:right-4 sm:bottom-4 z-[10000] flex flex-col gap-2 pointer-events-none sm:w-full sm:max-w-sm">
         <AnimatePresence>
           {toasts.map((toast) => (
             <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />

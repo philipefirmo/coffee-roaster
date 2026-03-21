@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
+import ConfirmModal from './ConfirmModal';
 import MovementForm from './MovementForm';
 import SkeletonLoader from './SkeletonLoader';
-import { Package, AlertTriangle, TrendingUp, Plus, Search, Calendar, X, Filter } from 'lucide-react';
+import { Package, AlertTriangle, TrendingUp, Plus, Search, Calendar, X, Filter, Edit2 } from 'lucide-react';
 import { formatGrams } from '../lib/utils';
 
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useApp();
+  const { state, actions } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [filterDate, setFilterDate] = useState('');
@@ -18,6 +19,58 @@ const Dashboard: React.FC = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [tempFilterDate, setTempFilterDate] = useState(filterDate);
   const [tempFilterStatus, setTempFilterStatus] = useState<'all' | 'ok' | 'low'>(filterStatus);
+  const [showFab, setShowFab] = useState(false);
+
+  // Quick Observation Edit State
+  const [editingRoast, setEditingRoast] = useState<{ id: string, observations: string } | null>(null);
+  const [originalObservations, setOriginalObservations] = useState('');
+  const [observationText, setObservationText] = useState('');
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
+
+  const handleEditObservation = (roast: { id: string, observations?: string }) => {
+    const obs = roast.observations || '';
+    setEditingRoast({ id: roast.id, observations: obs });
+    setObservationText(obs);
+    setOriginalObservations(obs);
+  };
+
+  const handleCloseObservationModal = () => {
+    if (observationText !== originalObservations) {
+      setShowConfirmClose(true);
+    } else {
+      setEditingRoast(null);
+    }
+  };
+
+  const confirmCloseObservation = () => {
+    setShowConfirmClose(false);
+    setEditingRoast(null);
+  };
+
+  const handleSaveObservation = async () => {
+    if (!editingRoast) return;
+    await actions.updateRoastObservation(editingRoast.id, observationText);
+    setEditingRoast(null);
+  };
+
+  // Scroll Listener para FAB
+  React.useEffect(() => {
+    const mainElement = document.querySelector('main'); // O container de scroll é o main, não a window
+    if (!mainElement) return;
+
+    const handleScroll = () => {
+      // Mostrar FAB se rolar mais de 200px
+      const show = mainElement.scrollTop > 200;
+      setShowFab(show);
+    };
+
+    mainElement.addEventListener('scroll', handleScroll);
+
+    // Verificar estado inicial
+    handleScroll();
+
+    return () => mainElement.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Função para formatar data no formato DD/MM/YYYY
   const formatDate = (dateStr: string) => {
@@ -166,10 +219,13 @@ const Dashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* FAB Mobile */}
+      {/* FAB Mobile (Always Visible) & Desktop (Conditional) */}
       <button
         onClick={handleOpenNew}
-        className="fixed bottom-20 right-4 sm:hidden z-40 bg-espresso-600 text-white p-4 rounded-full shadow-lg hover:bg-espresso-700 touch-target"
+        className={`fixed bottom-20 right-4 z-40 bg-espresso-600 text-white p-4 rounded-full shadow-lg hover:bg-espresso-700 touch-target transition-all duration-300 sm:bottom-10 sm:right-10 ${showFab
+          ? 'opacity-100 visible translate-y-0'
+          : 'opacity-100 visible translate-y-0 sm:opacity-0 sm:invisible sm:translate-y-10 sm:pointer-events-none'
+          }`}
         aria-label="Nova Movimentação"
       >
         <Plus size={24} />
@@ -363,61 +419,51 @@ const Dashboard: React.FC = () => {
                 <th className="px-6 py-3 text-center text-xs font-bold text-black dark:text-white uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-natural-200 dark:divide-gray-700">
-              {filteredCoffees.length === 0 ? (
+            {filteredCoffees.length === 0 ? (
+              <tbody className="bg-white dark:bg-gray-800">
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     Nenhum café encontrado com os filtros selecionados.
                   </td>
                 </tr>
-              ) : (
-                filteredCoffees.map((coffee) => {
-                  const filteredTotalQuantity = coffee.roasts.reduce((sum, r) => sum + r.quantity, 0);
-                  const originalCoffee = state.coffees.find(c => c.id === coffee.id);
-                  const globalTotal = originalCoffee ? originalCoffee.roasts.reduce((sum, r) => sum + r.quantity, 0) : 0;
+              </tbody>
+            ) : (
+              filteredCoffees.map((coffee) => {
+                const filteredTotalQuantity = coffee.roasts.reduce((sum, r) => sum + r.quantity, 0);
+                const originalCoffee = state.coffees.find(c => c.id === coffee.id);
+                const globalTotal = originalCoffee ? originalCoffee.roasts.reduce((sum, r) => sum + r.quantity, 0) : 0;
 
-                  return (
-                    <React.Fragment key={coffee.id}>
-                      {coffee.roasts.map((roast, index) => (
-                        <tr key={`${coffee.id}-${roast.id}`} className="hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors">
-                          {index === 0 && (
-                            <td rowSpan={coffee.roasts.length} className="px-6 py-4 whitespace-nowrap align-top bg-white dark:bg-gray-800 border-r border-natural-100 dark:border-gray-700">
-                              <div className="text-sm font-bold text-black dark:text-white">{coffee.name}</div>
-                              <div className="text-xs text-black dark:text-gray-300 mt-1 font-bold">Total: {formatGrams(filteredTotalQuantity)}</div>
-                            </td>
-                          )}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-bold">{roast.pr}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium">{formatDate(roast.date)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white text-right font-bold">{formatGrams(roast.quantity)}</td>
-                          <td className="px-6 py-4 text-sm text-black dark:text-gray-300 max-w-xs truncate font-medium">
-                            {roast.observations || '-'}
-                          </td>
-                          {index === 0 && (
-                            <td rowSpan={coffee.roasts.length} className="px-6 py-4 whitespace-nowrap text-center align-middle border-l border-natural-100 dark:border-gray-700">
-                              {globalTotal < 500 ? (
-                                <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
-                                  Baixo
-                                </span>
-                              ) : (
-                                <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
-                                  OK
-                                </span>
-                              )}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                      {coffee.roasts.length === 0 && (
-                        <tr key={coffee.id} className="hover:bg-natural-50 dark:hover:bg-gray-700 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap align-top bg-white dark:bg-gray-800 border-r border-natural-100 dark:border-gray-700">
+                return (
+                  <tbody
+                    key={coffee.id}
+                    className="divide-y divide-natural-200 dark:divide-gray-700 border-b border-natural-100 dark:border-gray-700 last:border-0 group hover:bg-natural-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    {coffee.roasts.map((roast, index) => (
+                      <tr key={`${coffee.id}-${roast.id}`} className="transition-colors bg-transparent">
+                        {index === 0 && (
+                          <td rowSpan={coffee.roasts.length} className="px-6 py-4 whitespace-nowrap align-top border-r border-natural-100 dark:border-gray-700">
                             <div className="text-sm font-bold text-black dark:text-white">{coffee.name}</div>
-                            <div className="text-xs text-black dark:text-gray-300 mt-1 font-bold">Total: 0g</div>
+                            <div className="text-xs text-black dark:text-gray-300 mt-1 font-bold">Total: {formatGrams(filteredTotalQuantity)}</div>
                           </td>
-                          <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                            Sem estoque {filterDate ? 'nesta data' : ''}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center align-middle border-l border-natural-100 dark:border-gray-700">
-                            {globalTotal < 500 ? (
+                        )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-bold">{roast.pr}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium">{formatDate(roast.date)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white text-right font-bold">{formatGrams(roast.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-black dark:text-gray-300 max-w-xs truncate font-medium group/obs relative">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate">{roast.observations || '-'}</span>
+                            <button
+                              onClick={() => handleEditObservation(roast)}
+                              className="opacity-0 group-hover/obs:opacity-100 p-1 hover:bg-natural-100 dark:hover:bg-gray-600 rounded transition-all text-xs text-espresso-600 dark:text-espresso-400"
+                              title="Editar observação"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        {index === 0 && (
+                          <td rowSpan={coffee.roasts.length} className="px-6 py-4 whitespace-nowrap text-center align-middle border-l border-natural-100 dark:border-gray-700">
+                            {globalTotal < (originalCoffee?.minStockThreshold || 500) ? (
                               <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
                                 Baixo
                               </span>
@@ -427,13 +473,35 @@ const Dashboard: React.FC = () => {
                               </span>
                             )}
                           </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })
-              )}
-            </tbody>
+                        )}
+                      </tr>
+                    ))}
+                    {coffee.roasts.length === 0 && (
+                      <tr key={coffee.id} className="transition-colors bg-transparent">
+                        <td className="px-6 py-4 whitespace-nowrap align-top border-r border-natural-100 dark:border-gray-700">
+                          <div className="text-sm font-bold text-black dark:text-white">{coffee.name}</div>
+                          <div className="text-xs text-black dark:text-gray-300 mt-1 font-bold">Total: 0g</div>
+                        </td>
+                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                          Sem estoque {filterDate ? 'nesta data' : ''}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center align-middle border-l border-natural-100 dark:border-gray-700">
+                          {globalTotal < (originalCoffee?.minStockThreshold || 500) ? (
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
+                              Baixo
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
+                              OK
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                );
+              })
+            )}
           </table>
         </div>
 
@@ -486,11 +554,18 @@ const Dashboard: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="flex justify-between items-center mb-2">
+                          <div className="flex justify-between items-end mb-2">
                             <div>
                               <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Data Torra</span>
                               <p className="text-sm font-medium text-black dark:text-gray-300">{formatDate(roast.date)}</p>
                             </div>
+                            <button
+                              onClick={() => handleEditObservation(roast)}
+                              className="text-espresso-600 dark:text-espresso-400 hover:text-espresso-700 dark:hover:text-espresso-300 transition-colors p-1"
+                              title="Editar observação"
+                            >
+                              <Edit2 size={18} />
+                            </button>
                           </div>
 
                           {roast.observations && (
@@ -581,6 +656,51 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Observation Edit Modal */}
+      <Modal
+        isOpen={!!editingRoast}
+        onClose={handleCloseObservationModal}
+        title="Editar Observação"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">
+              Observações do Lote
+            </label>
+            <textarea
+              value={observationText}
+              onChange={(e) => setObservationText(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-espresso-500 min-h-[100px]"
+              placeholder="Adicione notas sobre a torra, perfil, etc."
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={handleCloseObservationModal}
+              className="px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveObservation}
+              className="px-4 py-2 text-sm font-bold text-white bg-espresso-600 rounded-lg hover:bg-espresso-700 transition-colors shadow-sm"
+            >
+              Salvar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={showConfirmClose}
+        onClose={() => setShowConfirmClose(false)}
+        onConfirm={confirmCloseObservation}
+        title="Descartar alterações?"
+        message="Existem alterações não salvas na observação. Tem certeza que deseja fechar?"
+        confirmLabel="Descartar"
+        isDestructive={true}
+      />
     </div>
   );
 };

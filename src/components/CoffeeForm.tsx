@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 export interface CoffeeFormData {
   name: string;
   observations?: string;
+  minStockThreshold?: number;
 }
 
 interface CoffeeFormProps {
@@ -12,29 +13,38 @@ interface CoffeeFormProps {
   onCancel: () => void;
   isEditing: boolean;
   submitLabel?: string;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-const CoffeeForm: React.FC<CoffeeFormProps> = ({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
+const CoffeeForm: React.FC<CoffeeFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
   isEditing,
-  submitLabel 
+  submitLabel,
+  onDirtyChange
 }) => {
   const {
     register,
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CoffeeFormData>();
+
+  useEffect(() => {
+    if (onDirtyChange) {
+      onDirtyChange(isDirty);
+    }
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (initialData) {
       setValue('name', initialData.name);
       setValue('observations', initialData.observations || '');
+      setValue('minStockThreshold', initialData.minStockThreshold);
     } else {
-      reset({ name: '', observations: '' });
+      reset({ name: '', observations: '', minStockThreshold: undefined });
     }
   }, [initialData, setValue, reset]);
 
@@ -44,6 +54,7 @@ const CoffeeForm: React.FC<CoffeeFormProps> = ({
         <label className="block text-sm font-bold text-black dark:text-white mb-1">Nome do Café</label>
         <input
           type="text"
+          autoComplete="off"
           {...register('name', { required: 'Nome é obrigatório' })}
           className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
           placeholder="Ex: Colombia Huila"
@@ -59,6 +70,18 @@ const CoffeeForm: React.FC<CoffeeFormProps> = ({
           className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
           placeholder="Ex: Notas sensoriais, fornecedor..."
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-bold text-black dark:text-white mb-1">Alerta de Estoque Mínimo (g)</label>
+        <input
+          type="number"
+          {...register('minStockThreshold', { min: 0 })}
+          onWheel={(e) => e.currentTarget.blur()}
+          className="w-full rounded-md border-natural-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-espresso-500 focus:ring-espresso-500 py-2 px-3 border text-black dark:text-white font-medium"
+          placeholder="Padrão: 500g"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Defina a quantidade mínima para o alerta "Baixo". Se vazio, será 500g.</p>
       </div>
 
       <div className="flex gap-3 mt-4">

@@ -210,18 +210,18 @@ const History: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-natural-100 dark:border-gray-700 overflow-hidden transition-colors">
 
         {/* Desktop Table */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full divide-y divide-natural-200 dark:divide-gray-700">
+        <div className="hidden md:block overflow-hidden rounded-xl border border-natural-100 dark:border-gray-700">
+          <table className="w-full table-fixed divide-y divide-natural-200 dark:divide-gray-700">
             <thead className="bg-natural-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">Data/Hora</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">Café</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">PR/Lote</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-black dark:text-white uppercase tracking-wider">Qtd (g)</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">Responsável</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider">Obs</th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-black dark:text-white uppercase tracking-wider">Ações</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-40">Data/Hora</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-24">Tipo</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-1/4">Café</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-24">PR/Lote</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-black dark:text-white uppercase tracking-wider w-20">Qtd</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-32">Resp.</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-black dark:text-white uppercase tracking-wider w-40">Obs</th>
+                <th className="px-6 py-3 text-center text-xs font-bold text-black dark:text-white uppercase tracking-wider w-24">Ações</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-natural-200 dark:divide-gray-700">
@@ -242,17 +242,17 @@ const History: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${movement.type === 'entrada'
-                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                          : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                         }`}>
                         <span className="mr-1">{getTypeIcon(movement.type)}</span>
                         <span className="capitalize">{movement.type}</span>
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-black dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-black dark:text-white truncate" title={movement.coffeeName}>
                       {movement.coffeeName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium truncate" title={movement.pr}>
                       {movement.pr}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold">
@@ -260,11 +260,13 @@ const History: React.FC = () => {
                         {movement.type === 'entrada' ? '+' : '-'}{formatGrams(movement.quantity)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-gray-300 font-medium truncate" title={movement.responsible}>
                       {movement.responsible || '-'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-black dark:text-gray-300 max-w-xs truncate font-medium">
-                      {movement.observations || '-'}
+                    <td className="px-6 py-4 text-sm text-black dark:text-gray-300 font-medium" title={movement.observations || ''}>
+                      {movement.observations
+                        ? (movement.observations.length > 20 ? movement.observations.substring(0, 20) + '...' : movement.observations)
+                        : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -306,8 +308,8 @@ const History: React.FC = () => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold mb-1 ${movement.type === 'entrada'
-                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                      : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                       }`}>
                       <span className="mr-1">{getTypeIcon(movement.type)}</span>
                       <span className="capitalize">{movement.type}</span>
@@ -330,7 +332,7 @@ const History: React.FC = () => {
                       </button>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 block">{formatDate(movement.timestamp)}</span>
-                    <span className={`text-lg font-bold ${movement.type === 'entrada' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                    <span className={`text-base font-bold ${movement.type === 'entrada' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                       {movement.type === 'entrada' ? '+' : '-'}{formatGrams(movement.quantity)}
                     </span>
                   </div>
@@ -447,14 +449,30 @@ const History: React.FC = () => {
 
       <Modal
         isOpen={!!editingMovement}
-        onClose={() => setEditingMovement(null)}
+        onClose={() => {
+          // Verificar se MovementForm tem handler de confirmação
+          const handler = (window as any).__movementFormCloseHandler;
+          if (handler) {
+            handler();
+          } else {
+            setEditingMovement(null);
+          }
+        }}
         title="Editar Movimentação"
       >
         {editingMovement && (
           <MovementForm
             initialData={editingMovement}
             onSuccess={() => setEditingMovement(null)}
-            onCancel={() => setEditingMovement(null)}
+            onCancel={() => {
+              // Same check for Cancel button if needed, or rely on MovementForm's internal
+              // But here we just close if canceled. The internal form handles its own cancel button?
+              // Actually MovementForm calls onCancel prop when cancelled.
+              setEditingMovement(null);
+            }}
+            // We need to pass close handler logic down? No, window handler handles it. 
+            // But we pass onRequestClose just to be safe if MovementForm uses it.
+            onRequestClose={() => setEditingMovement(null)}
           />
         )}
       </Modal>

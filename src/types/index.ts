@@ -3,6 +3,7 @@ export interface Coffee {
   name: string;
   roasts: Roast[];
   observations?: string;
+  minStockThreshold?: number;
 }
 
 export interface Roast {
@@ -67,8 +68,10 @@ export interface AppContextType {
     updateCoffee: (coffeeId: string, updates: Partial<Coffee>) => void;
     deleteCoffee: (coffeeId: string) => void;
     addMultipleMovements: (movements: Array<Omit<Movement, 'id'>>) => Promise<void>;
+    deleteCoffees: (coffeeIds: string[]) => Promise<void>;
     refreshData: () => void;
     login: (name: string) => void;
     logout: () => void;
+    updateRoastObservation: (roastId: string, observation: string) => Promise<void>;
   };
 }
